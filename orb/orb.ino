@@ -27,14 +27,13 @@
 #include <PString.h>
 #include <SoftwareSerial.h>
 #include <TimedAction.h>
-    
-#include "WiFlySerial.h"
-#include "FreeMemory.h"
+#include <WiFlySerial.h>
+#include <FreeMemory.h>
+
 #include "Credentials.h"
 #include "LEDDisplay.h"
 #include "Jenkins.h"
 
-WiFlySerial wifi(ARDUINO_RX_PIN, ARDUINO_TX_PIN); 
 
 // LED Pins
 #define RED_LED_PIN    9
@@ -44,17 +43,18 @@ WiFlySerial wifi(ARDUINO_RX_PIN, ARDUINO_TX_PIN);
 #define REQUEST_BUFFER_SIZE 180
 #define BODY_BUFFER_SIZE 100
 
-#define JENKINS_HOST "ci.test.com"
+#define JENKINS_HOST "ci.onejx.net"
 
-Jenkins jenkins = Jenkins(JENKINS_HOST);
+Jenkins jenkins(JENKINS_HOST);
+
+WiFlySerial wifi(ARDUINO_RX_PIN, ARDUINO_TX_PIN); 
 
 // Check the state of the build periodically
-TimedAction getBuildStateAction = TimedAction(30000, sendRequest);
+TimedAction getBuildStateAction(30000, sendRequest);
 
 // Update display periodically
-TimedAction refreshDisplayAction = TimedAction(5, refreshDisplay);
+TimedAction refreshDisplayAction(5, refreshDisplay);
 
-long lastBuild = 0;
 
 void setup()  { 
 	Serial.begin(9600);
@@ -103,11 +103,13 @@ bool testWiFly() {
     Serial << F("testWiFly(): enter") << endl;  
 	Serial << F("RAM: ") << freeMemory() << endl;  
 
-	//wifi.setDebugChannel((Print*) &Serial);
+    Display.status(STATUS_NO_NETWORK);
 
 	if (wifi.begin()) {
 		Serial << F("WiFly version: ") <<  wifi.getLibraryVersion(bufRequest, REQUEST_BUFFER_SIZE) << endl;
 		Serial << F("MAC: ") << wifi.getMAC(bufRequest, REQUEST_BUFFER_SIZE) << endl;    
+
+        refreshDisplayAction.check();
 		
 		wifi.setAuthMode(WIFLY_AUTH_WPA2_PSK);
 		wifi.setJoinMode(WIFLY_JOIN_AUTO);
@@ -115,8 +117,12 @@ bool testWiFly() {
 		 
 		wifi.getDeviceStatus();
 
+        refreshDisplayAction.check();
+
 		if (!wifi.isifUp()) 
         {
+            refreshDisplayAction.check();
+
 			Serial << F("Leaving: ") <<  ssid << wifi.leave() << endl;
 
 			if (wifi.setSSID(ssid)) 
@@ -135,12 +141,17 @@ bool testWiFly() {
             {
 				Serial << F("Joined: ") << ssid << endl;
 				wifi.setNTP(ntp_server);
+                Display.status(STATUS_OK);
 			} 
             else 
             {
 				Serial << F("Joining: ") << ssid << F(" failed") << endl;
 			}
-		}
+		} 
+        else 
+        {
+            Display.status(STATUS_OK);
+        }
 
 		Serial << F("IP: ") << wifi.getIP(bufRequest, REQUEST_BUFFER_SIZE) << endl 
                 << F("Netmask: ") << wifi.getNetMask(bufRequest, REQUEST_BUFFER_SIZE) << endl 
@@ -149,7 +160,6 @@ bool testWiFly() {
 
 		wifi.SendCommand("set comm remote 0", ">", bufBody, BODY_BUFFER_SIZE);
 		wifi.closeConnection();
-
 
 		wifi.flush();
 		while (wifi.available()) 
@@ -205,6 +215,8 @@ void sendRequest() {
 
 
 void displayBuildSate() {
+    static long lastBuildTime = 0;
+
     Project project;
     int buildingIndex = jenkins.projects.building();
 
@@ -231,13 +243,13 @@ void displayBuildSate() {
 
 	if (project.building) 
     {
-        lastBuild = millis();
+        lastBuildTime = millis();
         Display.buildInProgress(project.success);
 	} 
     else 
     {
-        // After 2 min turn off lights or notified of failure state
-        if (millis() - lastBuild > 120000)
+        // After 2 min turn off lights or notify of failure state
+        if (millis() - lastBuildTime > 120000)
         {
             if (jenkins.projects.hasFailure())
             {
