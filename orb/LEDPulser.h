@@ -4,6 +4,7 @@
 class LEDPulser
 {
   public:
+    LEDPulser() {};
     LEDPulser(int ledPin);
 
     void pulse();

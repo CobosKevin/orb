@@ -10,3 +10,8 @@ void ArduinoUno_AnalogWrite(int pin, int level)
 {
 	analogWrite(pin, level);
 }
+
+void ArduinoUno_Delay(long ms)
+{
+	delay(ms);
+}

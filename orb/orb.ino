@@ -31,7 +31,7 @@
 #include "WiFlySerial.h"
 #include "FreeMemory.h"
 #include "Credentials.h"
-#include "LEDPulser.h"
+#include "LEDDisplay.h"
 #include "Jenkins.h"
 
 WiFlySerial wifi(ARDUINO_RX_PIN, ARDUINO_TX_PIN); 
@@ -51,12 +51,8 @@ Jenkins jenkins = Jenkins(JENKINS_HOST);
 // Check the state of the build periodically
 TimedAction getBuildStateAction = TimedAction(30000, sendRequest);
 
-// Update the LED periodically
-TimedAction refreshLEDAction = TimedAction(5, refreshLED);
-
-LEDPulser redLEDPulser = LEDPulser(RED_LED_PIN);
-LEDPulser greenLEDPulser = LEDPulser(GREEN_LED_PIN);
-LEDPulser blueLEDPulser = LEDPulser(BLUE_LED_PIN);
+// Update display periodically
+TimedAction refreshDisplayAction = TimedAction(5, refreshDisplay);
 
 long lastBuild = 0;
 
@@ -66,7 +62,8 @@ void setup()  {
     Serial << F("setup(): enter") << endl;  
     Serial << F("RAM: ") << freeMemory() << endl;
 
-	testLED();
+    Display.setRGBPins(RED_LED_PIN, GREEN_LED_PIN, BLUE_LED_PIN);
+    Display.test();
 
 	testWiFly();
 
@@ -76,33 +73,26 @@ void setup()  {
 } 
 
 void loop()  { 	
-    refreshLEDAction.check();
+    refreshDisplayAction.check();
     if (wifi.isConnectionOpen() && wifi.available() > 0)
     {
     	while (wifi.available() > 0)
     	{
-            refreshLEDAction.check();
+            refreshDisplayAction.check();
     		jenkins.parse((char) wifi.read());
             delay(1);
     	}
         wifi.closeConnection();
-        refreshLEDAction.check();
+        refreshDisplayAction.check();
         displayBuildSate();
     }
-    refreshLEDAction.check();
+    refreshDisplayAction.check();
 	getBuildStateAction.check();
 }
 
-void testLED() {
-    redLEDPulser.on();
-    delay(400);
-    redLEDPulser.off();
-    greenLEDPulser.on();
-    delay(400);
-    greenLEDPulser.off();
-	blueLEDPulser.on();
-	delay(400);
-    blueLEDPulser.off();
+void refreshDisplay()
+{
+    Display.refresh();
 }
 
 
@@ -191,7 +181,7 @@ void sendRequest() {
 	if (wifi.openConnection(jenkins.getHost(), 5000UL)) 
 	{
         failedCount = 0;
-        refreshLEDAction.check();
+        refreshDisplayAction.check();
 		wifi << (const char*) strRequest << endl;
 	} 
     else 
@@ -203,22 +193,14 @@ void sendRequest() {
 
     if (failedCount > 2)
     {
-        blueLEDPulser.slow();
-        blueLEDPulser.enable();
+        Display.status(STATUS_CONNECTION_ERROR);
     }
     else
     {
-        blueLEDPulser.off();
+        Display.status(STATUS_OK);
     }
 
     Serial << F("sendRequest(): exit") << endl;  
-}
-
-
-void refreshLED() {
-	redLEDPulser.pulse();
-	greenLEDPulser.pulse();
-	blueLEDPulser.pulse();
 }
 
 
@@ -250,52 +232,25 @@ void displayBuildSate() {
 	if (project.building) 
     {
         lastBuild = millis();
-
-		if (project.success) 
-        {
-			redLEDPulser.off();
-			greenLEDPulser.enable();
-		} 
-        else 
-        {
-			greenLEDPulser.off();
-            redLEDPulser.slow();
-			redLEDPulser.enable();
-		}
+        Display.buildInProgress(project.success);
 	} 
     else 
     {
-        redLEDPulser.disable();
-        greenLEDPulser.disable();
-
         // After 2 min turn off lights or notified of failure state
         if (millis() - lastBuild > 120000)
         {
             if (jenkins.projects.hasFailure())
             {
-                greenLEDPulser.off();
-                redLEDPulser.fast();
-                redLEDPulser.enable();
+                Display.someBuildFailed();
             }
             else
             {
-                // Turn off lights
-                greenLEDPulser.off();
-                redLEDPulser.off();
+                Display.sleep();
             }
         }
         else
         {
-            if (project.success) 
-            {
-                redLEDPulser.off();
-                greenLEDPulser.on();
-            } 
-            else 
-            {
-                greenLEDPulser.off();
-                redLEDPulser.on();
-            }            
+            Display.buildDone(project.success);
         }
 	}
 }
