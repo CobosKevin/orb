@@ -6,11 +6,11 @@ LEDDisplay::LEDDisplay()
 {
 }
 
-void LEDDisplay::setRGBPins(int redPin, int greenPin, int bluePin)
+void LEDDisplay::setRGBPins(unsigned short redPin, unsigned short greenPin, unsigned short bluePin)
 {
-	redLEDPulser = LEDPulser(redPin);
-	greenLEDPulser = LEDPulser(greenPin);
-	blueLEDPulser = LEDPulser(bluePin);	
+    redLEDPulser = LEDPulser(redPin);
+    greenLEDPulser = LEDPulser(greenPin);
+    blueLEDPulser = LEDPulser(bluePin);
 }
 
 void LEDDisplay::refresh()
@@ -20,79 +20,83 @@ void LEDDisplay::refresh()
     blueLEDPulser.pulse();
 }
 
-void LEDDisplay::test() {
+void LEDDisplay::test()
+{
     redLEDPulser.on();
     ArduinoUno_Delay(400);
     redLEDPulser.off();
     greenLEDPulser.on();
     ArduinoUno_Delay(400);
     greenLEDPulser.off();
-	blueLEDPulser.on();
-	ArduinoUno_Delay(400);
+    blueLEDPulser.on();
+    ArduinoUno_Delay(400);
     blueLEDPulser.off();
 }
 
 void LEDDisplay::buildInProgress(bool lastBuildSuccess = true)
 {
-	if (lastBuildSuccess) 
+    if (lastBuildSuccess)
     {
-		redLEDPulser.off();
-		greenLEDPulser.enable();
-	} 
-    else 
+        redLEDPulser.off();
+        greenLEDPulser.enable();
+    }
+    else
     {
-		greenLEDPulser.off();
+        greenLEDPulser.off();
         redLEDPulser.slow();
-		redLEDPulser.enable();
-	}
+        redLEDPulser.enable();
+    }
 }
 
 void LEDDisplay::buildDone(bool success = true)
 {
-    if (success) 
+    if (success)
     {
         redLEDPulser.off();
         greenLEDPulser.on();
-    } 
-    else 
+    }
+    else
     {
         greenLEDPulser.off();
         redLEDPulser.on();
-    }            
+    }
 
 }
 
 void LEDDisplay::sleep()
 {
     redLEDPulser.off();
-	greenLEDPulser.off();
+    greenLEDPulser.off();
 }
 
 void LEDDisplay::status(int code)
 {
-	switch(code)
-	{
-		case STATUS_OK:
-			blueLEDPulser.off();
-			break;
-		case STATUS_CONNECTION_ERROR:
-	        blueLEDPulser.slow();
-	        blueLEDPulser.enable();
-			break;
-		case STATUS_NO_NETWORK:
-	        blueLEDPulser.fast();
-	        blueLEDPulser.enable();
-			break;
-		default:
-			blueLEDPulser.off();
-	}
+    switch(code)
+    {
+    case STATUS_OK:
+        blueLEDPulser.off();
+        break;
+    case STATUS_CONNECTION_ERROR:
+        blueLEDPulser.slow();
+        blueLEDPulser.enable();
+        break;
+    case STATUS_NO_NETWORK:
+        blueLEDPulser.fast();
+        blueLEDPulser.enable();
+        break;
+    case STATUS_SETUP_MODE:
+        blueLEDPulser.on();
+        break;
+    default:
+        blueLEDPulser.off();
+    }
 }
 
 void LEDDisplay::someBuildFailed()
 {
-	greenLEDPulser.off();
-	redLEDPulser.fast();
-	redLEDPulser.enable();
+    greenLEDPulser.off();
+    redLEDPulser.fast();
+    redLEDPulser.enable();
 }
 
 LEDDisplay Display;

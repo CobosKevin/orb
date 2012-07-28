@@ -3,15 +3,15 @@
 
 void ArduinoUno_SetPinToOutputMode(int pin)
 {
-	pinMode(pin, OUTPUT);
+    pinMode(pin, OUTPUT);
 }
 
 void ArduinoUno_AnalogWrite(int pin, int level)
 {
-	analogWrite(pin, level);
+    analogWrite(pin, level);
 }
 
 void ArduinoUno_Delay(long ms)
 {
-	delay(ms);
+    delay(ms);
 }

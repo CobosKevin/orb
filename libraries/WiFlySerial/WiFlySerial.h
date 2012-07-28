@@ -12,7 +12,7 @@ Compatible with Arduino 1.0
 Version 1.08
 
 - WiFlyGSX is a relatively intelligent peer.
-- WiFlyGSX may have awoken in a valid configured state while Arduino asleep; 
+- WiFlyGSX may have awoken in a valid configured state while Arduino asleep;
     initialization and configuration to be polite and obtain state
 - WiFlyGSX hardware CTS/RTS not enabled yet
 - Can listen on multiple ports, only one at a time.
@@ -69,8 +69,8 @@ Copyright GPL 2.0 Tom Waldock 2011
 #define UC_N_IP_BYTES  4      // number of bytes per IP Address (need test for IPv6)
 
 // default ports as set in WiFly - if you change these, make certain you call setRemotePort/setLocalPort
-#define WIFLY_DEFAULT_REMOTE_PORT 80    
-#define WIFLY_DEFAULT_LOCAL_PORT 2000  
+#define WIFLY_DEFAULT_REMOTE_PORT 80
+#define WIFLY_DEFAULT_LOCAL_PORT 2000
 #define WIFLY_DEFAULT_BAUD_RATE 9600
 
 #define COMMAND_MODE_GUARD_TIME 	300 // in milliseconds.  Must be at least 250ms.
@@ -86,7 +86,7 @@ Copyright GPL 2.0 Tom Waldock 2011
 #define COMMAND_MODE_ENTER_RETRY_ATTEMPTS 5
 #define COMMAND_RETRY_ATTEMPTS 3
 
-// WiFly Responses  
+// WiFly Responses
 #define PROMPT_NONE					0x0
 #define PROMPT_EXPECTED_TOKEN_FOUND	0x1
 #define PROMPT_READY 			   	0x2
@@ -134,8 +134,8 @@ Copyright GPL 2.0 Tom Waldock 2011
 #define WIFLY_DHCP_CACHE       3    // DHCP CACHE, use previous IP address if lease is not expired.
 
 // IP modes: UDP and TCP
-#define WIFLY_IPMODE_UDP       0x02;    // Same as W5100_defn's SmMR::UDP
-#define WIFLY_IPMODE_TCP       0x01;    // Same as W5100_defn's SmMR::TCP
+#define WIFLY_IPMODE_UDP       0x02    // Same as W5100_defn's SmMR::UDP
+#define WIFLY_IPMODE_TCP       0x01    // Same as W5100_defn's SmMR::TCP
 
 #define WIFLY_STATUS_OFFLINE    0
 #define WIFLY_STATUS_ONLINE     1
@@ -152,18 +152,19 @@ uint8_t* BufferToIP_Array(char* pBuffer, uint8_t* pIP)  ;
 
 
 
-class WiFlySerial : public Stream {
-  public:
+class WiFlySerial : public Stream
+{
+public:
     // Constructors
     WiFlySerial(byte pinReceive, byte pinSend);
-    
+
     // Destructor
-    
+
     // Initialization
     boolean begin();  // Initialises this interface Class.
-    
+
     // Status
-    
+
     // Obtain current device status flags
     long    getDeviceStatus();  // refreshes device status flags.
     boolean isAssociated();
@@ -175,7 +176,7 @@ class WiFlySerial : public Stream {
     boolean isDNScontacted();
     boolean isInCommandMode();
     boolean isConnectionOpen();
-            
+
     // Information
     // Device Info
     char* showNetworkScan( char* pNetScan, const int buflen);
@@ -183,7 +184,7 @@ class WiFlySerial : public Stream {
 
 // IP info
     char* getSSID(char* buf, int buflen);
-    char* getDeviceID(char* buf, int buflen);    
+    char* getDeviceID(char* buf, int buflen);
     char* getIP(char* buf, int buflen);
     char* getNetMask(char* buf, int buflen);
     char* getGateway(char* buf, int buflen);
@@ -196,12 +197,12 @@ class WiFlySerial : public Stream {
     char* getBattery(char* pBuf, int buflen);
 
     // Transmit / Receive / available through exposed SoftwareSerial
-    SoftwareSerial uart;    
-    
+    SoftwareSerial uart;
+
     // Configuration Generic Wifi methods
-    
+
     // Generic Wifi methods
-    boolean setSSID( const char* pSSID);    
+    boolean setSSID( const char* pSSID);
     boolean setPassphrase( const char* pPassphrase);
     boolean setDeviceID( const char* pHostname);
     boolean setNTP(const char* pNTP_IP);
@@ -216,41 +217,41 @@ class WiFlySerial : public Stream {
     boolean setRemotePort( int iNewRemotePort = WIFLY_DEFAULT_REMOTE_PORT);
     boolean setProtocol( unsigned int iProtocol);
     boolean setAuthMode( int iAuthMode);
-    boolean setJoinMode( int iJoinMode);        
+    boolean setJoinMode( int iJoinMode);
     boolean setDHCPMode(const int iModeDHCP);
-    
+
     // wifi network Association
-    
+
     // Joins ssid set with setSSID
     boolean join();
     boolean join( char* pSSID);
-    
+
     // Leaves current SSID.
     boolean leave();
-                 
+
     // Generic utility
     boolean StartCommandMode(char* pBuffer = NULL, const int bufSize = COMMAND_BUFFER_SIZE );
-    boolean exitCommandMode();     
+    boolean exitCommandMode();
     void    reboot();
-    
+
     // Client Connection
     boolean openConnection(const char* pURL, const unsigned long WaitTime = JOIN_WAIT_TIME  );
     boolean closeConnection(boolean bSafeClose = true);
-    
+
     // Server Connection - waits for a client to connect
     boolean serveConnection(  const unsigned long reconnectWaitTIme = SERVING_WAIT_TIME );
-    
+
     // Open-format for RN 131C/G commands
     boolean SendInquiry(char *Command, char* pBuffer, const int bufsize = RESPONSE_BUFFER_SIZE );
     boolean SendInquirySimple(char *Command);
-    boolean SendCommand( char *Command,   char *SuccessIndicator, char* pBuffer, const int bufsize, 
-                const boolean bCollecting = true, const unsigned long WaitTime = DEFAULT_WAIT_TIME , 
-                const boolean bClear = true, const boolean bPromptAfterResult = true );
+    boolean SendCommand( char *Command,   char *SuccessIndicator, char* pBuffer, const int bufsize,
+                         const boolean bCollecting = true, const unsigned long WaitTime = DEFAULT_WAIT_TIME ,
+                         const boolean bClear = true, const boolean bPromptAfterResult = true );
     boolean SendCommandSimple( char *Command,   char *SuccessIndicator);
 
     // utilities for collecting results or scanning for indicators.
-    int     ScanForPattern( char* responseBuffer, const int bufsize, const char *pExpectedPrompt, 
-                const boolean bCapturing = true, const unsigned long WaitTime = DEFAULT_WAIT_TIME, const boolean bPromptAfterResult = true   );
+    int     ScanForPattern( char* responseBuffer, const int bufsize, const char *pExpectedPrompt,
+                            const boolean bCapturing = true, const unsigned long WaitTime = DEFAULT_WAIT_TIME, const boolean bPromptAfterResult = true   );
     char*   ExtractDetail(char* pCommand, char* pDetail, const int buflen, const char* pFrom, const char* pTo);
     char*   ExtractDetailIdx(const int idxCommand, char* pDetail, int buflen, const int idxSearch, const int idxStop);
     int     CaptureUntilPrompt( char* responseBuffer, const int bufsize, const char *pExpectedPrompt, const unsigned long WaitTime = DEFAULT_WAIT_TIME  );
@@ -260,37 +261,41 @@ class WiFlySerial : public Stream {
     virtual int read();
     virtual int available();
     virtual void flush();
-    
+
     int drain ();
-  
+
     using Print::write;
 
     // debug utilities - use Serial : not NewSoftSerial as it will affect incoming stream.
     // should change these to use stream <<
     void    setDebugChannel( Print* pDebug);
-    Print*  getDebugChannel( )  { return pDebugChannel; };
+    Print*  getDebugChannel( )
+    {
+        return pDebugChannel;
+    };
     void    clearDebugChannel();
     void    DebugPrint( const char* pMessage);
     void    DebugPrint( const int iNumber);
     void    DebugPrint( const char ch);
 
+    // Periodically call the method passed during lengthy operations
+    void setWaitCallback(void (*function)());
 
-    
-  private:
+private:
     // internal buffer for command-prompt
     char    szWiFlyPrompt[INDICATOR_BUFFER_SIZE ];
-    
+
     // Internal status flags
-    long    fStatus;        
+    long    fStatus;
     boolean bWiFlyInCommandMode;
     boolean bWiFlyConnectionOpen;
     char*   pControl;
-    
+
     // Ports for connections
     int     iRemotePort;
     int     iLocalPort;
     long 	lUTC_Offset_seconds;
-    
+
 
     boolean GetCmdPrompt();
     char*   GetBuffer_P(const int StringIndex, char* pBuffer, int bufSize);
@@ -300,6 +305,11 @@ class WiFlySerial : public Stream {
     // Internal debug channel.
     Print*  pDebugChannel;
 
+
+    void (*waitCallback)();
+
+    // Non blocking wait loop that will yield to call back
+    void waitAndYield(unsigned long ms);
 };
 
 // static  WiFlySerialv2 wifi ( ARDUINO_RX_PIN, ARDUINO_TX_PIN);

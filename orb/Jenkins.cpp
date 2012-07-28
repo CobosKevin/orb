@@ -4,23 +4,20 @@
 
 #define SERVER_PATH "/cc.xml"
 
-Jenkins::Jenkins(const char* value)
-{	
-	setHost(value);
-	initialize();
-}
-
+/*
+    Handle the various build statuses returned by Jenkins server
+*/
 Jenkins::Jenkins()
-{	
-	initialize();
+{
+    initialize();
 }
 
 void Jenkins::initialize()
 {
-	projects = Projects();
-	currentProject = Project();
-	xmlParser = XMLParser();
-	xmlParser.setCallback(Jenkins::parserCallback, this);
+    projects = Projects();
+    currentProject = Project();
+    xmlParser = XMLParser();
+    xmlParser.setCallback(Jenkins::parserCallback, this);
 }
 
 /*
@@ -28,7 +25,7 @@ void Jenkins::initialize()
 */
 void Jenkins::parse(char c)
 {
-	xmlParser.parse(c);
+    xmlParser.parse(c);
 }
 
 /*
@@ -36,19 +33,19 @@ void Jenkins::parse(char c)
 */
 void Jenkins::handleTag(bool fTagClosed, char* tag, char* attribute, char* value)
 {
-	if (strcmp(tag, "Project") == 0)
-	{
-		if (fTagClosed)
-		{
-			projects.add(currentProject);
-			currentProject = Project();
-		} 
-		else
-		{
-			// Assign relevant params
-			handleAttributes(currentProject, attribute, value);
-		}
-	}
+    if (strcmp(tag, "Project") == 0)
+    {
+        if (fTagClosed)
+        {
+            projects.add(currentProject);
+            currentProject = Project();
+        }
+        else
+        {
+            // Assign relevant params
+            handleAttributes(currentProject, attribute, value);
+        }
+    }
 }
 
 /*
@@ -56,23 +53,23 @@ void Jenkins::handleTag(bool fTagClosed, char* tag, char* attribute, char* value
 */
 void Jenkins::handleAttributes(Project &project, char* attribute, char* value)
 {
-	if (strcmp(attribute, "name") == 0)
-	{
-		project.setHash(value);
-	}
-	else if (strcmp(attribute, "lastBuildTime") == 0)
-	{
-		project.setLastBuildTimeUTC(value);
-	}
-	else if (strcmp(attribute, "lastBuildStatus") == 0)
-	{
-		project.success = (strcmp(value, "Success") == 0);
+    if (strcmp(attribute, "name") == 0)
+    {
+        project.setHash(value);
+    }
+    else if (strcmp(attribute, "lastBuildTime") == 0)
+    {
+        project.setLastBuildTimeUTC(value);
+    }
+    else if (strcmp(attribute, "lastBuildStatus") == 0)
+    {
+        project.success = (strcmp(value, "Success") == 0);
 
-	}
-	else if (strcmp(attribute, "activity") == 0)
-	{
-		project.building = (strcmp(value, "Building") == 0);
-	}
+    }
+    else if (strcmp(attribute, "activity") == 0)
+    {
+        project.building = (strcmp(value, "Building") == 0);
+    }
 }
 
 /*
@@ -80,24 +77,14 @@ void Jenkins::handleAttributes(Project &project, char* attribute, char* value)
 */
 void Jenkins::parserCallback(void* context, bool fTagClosed, char* tag, char* attribute, char* value)
 {
-	if (context)
-	{
-		Jenkins *jenkins = (Jenkins *)context;
-		jenkins->handleTag(fTagClosed, tag, attribute, value);
-	}
-}
-
-void Jenkins::setHost(const char *value)
-{
-	strcpy(host, value);
-}
-
-char* Jenkins::getHost()
-{
-	return host;
+    if (context)
+    {
+        Jenkins *jenkins = (Jenkins *)context;
+        jenkins->handleTag(fTagClosed, tag, attribute, value);
+    }
 }
 
 const char* Jenkins::getPath()
 {
-	return SERVER_PATH;
+    return SERVER_PATH;
 }

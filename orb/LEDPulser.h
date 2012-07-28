@@ -1,11 +1,13 @@
 #ifndef LEDPULSER_H
 #define LEDPULSER_H
 
+#include "ArduinoUno.h"
+
 class LEDPulser
 {
-  public:
+public:
     LEDPulser() {};
-    LEDPulser(int ledPin);
+    LEDPulser(byte ledPin);
 
     void pulse();
     void enable();
@@ -14,12 +16,12 @@ class LEDPulser
     void fast();
     void on();
     void off();
-    
-  private:
-    int pin;
-    int direction;
-    int level;
-    int step;
+
+private:
+    byte pin;
+    byte direction;
+    unsigned short level;
+    byte step;
     bool fPulse;
 };
 

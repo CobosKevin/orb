@@ -5,20 +5,19 @@
 
 class Project
 {
-	public:
-	    Project();
-		void setHash(const char* name);
+public:
+    Project();
+    void setHash(const char* name);
+    void setLastBuildTimeUTC(const char* s);
 
-	    unsigned int hash;
-	    bool success;
-	    bool building;
-        time_t lastBuildTimeUTC;
-        void setLastBuildTimeUTC(const char* s);
+    unsigned int hash;
+    bool success;
+    bool building;
+    time_t lastBuildTimeUTC;
 
-	private:
-		unsigned int computeHash(const char* s);
-        time_t computeTimeUTC(const char* s);
-        struct tm lastBuildTime;
+private:
+    unsigned int computeHash(const char* s);
+    time_t computeTimeUTC(const char* s);
 };
 
 #endif
