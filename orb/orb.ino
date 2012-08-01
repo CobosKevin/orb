@@ -42,7 +42,6 @@
 #define SETUP_MODE_PIN 13U
 
 #define REQUEST_BUFFER_SIZE 180
-#define BODY_BUFFER_SIZE 100
 
 #define JENKINS_CONNECT_TIMEOUT 5000UL
 #define JENKINS_CONNECT_ATEMPTS 4
@@ -55,6 +54,7 @@ TimedAction getBuildStateAction(30000, sendRequest);
 TimedAction refreshDisplayAction(5, refreshDisplay);
 
 static boolean fSetupMode = false;
+static boolean fSetupFailed = false;
 
 void setup()
 {
@@ -71,13 +71,22 @@ void setup()
 
     if (!fSetupMode) 
     {
-        startWiFly();
-        sendRequest();
+        Display.status(STATUS_NO_NETWORK);
+        fSetupFailed = !startWiFly();
+        if (!fSetupFailed)
+        {
+            Display.status(STATUS_OK);
+            sendRequest();
+        }
+        else
+        {
+            Serial << F("Failed to acquire network") << endl;        
+        }
     }
     else
     {
         Display.status(STATUS_SETUP_MODE);
-        Serial << F("In setup mode") << endl;        
+        Serial << F("In setup mode") << endl;
     }
 
     Serial << F("setup(): exit") << endl;
@@ -87,7 +96,7 @@ void loop()
 {
     refreshDisplayAction.check();
 
-    if (!fSetupMode) 
+    if (!fSetupMode && !fSetupFailed) 
     {
         if (wifi.isConnectionOpen() && wifi.available() > 0)
         {
@@ -114,35 +123,38 @@ void refreshDisplayActionCheck()
     refreshDisplayAction.check();
 }
 
-void startWiFly()
+boolean startWiFly()
 {
+    boolean fConnected = false;
     char bufRequest[REQUEST_BUFFER_SIZE];
-    char bufBody[BODY_BUFFER_SIZE];
 
     Serial << F("startWiFly(): enter") << endl;
     Serial << F("RAM: ") << freeMemory() << endl;
-
-    Display.status(STATUS_NO_NETWORK);
 
     wifi.setWaitCallback(refreshDisplayActionCheck);
 
     if (wifi.begin())
     {
-        Serial << F("Wifi.begin()") << endl;
         Serial << F("MAC: ") << wifi.getMAC(bufRequest, REQUEST_BUFFER_SIZE) << endl;
-
-        /*
-            Attemps to join with stored credentials
-        */
-        wifi.setAuthMode(WIFLY_AUTH_WPA2_PSK);
-        wifi.setDHCPMode(WIFLY_DHCP_ON);
-        wifi.setJoinMode(WIFLY_JOIN_ANY);
 
         wifi.getDeviceStatus();
 
-        if (!wifi.isifUp())
+        if (wifi.isifUp())
         {
-            if (!wifi.join())
+            fConnected = true;
+        }
+        else
+        {
+            // Try to join any open network
+            wifi.setAuthMode(WIFLY_AUTH_OPEN);
+            wifi.setDHCPMode(WIFLY_DHCP_ON);
+            wifi.setJoinMode(WIFLY_JOIN_ANY);
+
+            if (wifi.join())
+            {
+                fConnected = true;
+            }
+            else
             {
                 // Can't seem to connect. Go into ADHOC mode so that we can telnet to device
                 Serial << F("setDHCP:") << wifi.setDHCPMode(WIFLY_DHCP_OFF) << endl;
@@ -157,29 +169,30 @@ void startWiFly()
 
                 // This will reset the wifly module and go into ADHOC mode
                 wifi.setProtocol(WIFLY_IPMODE_TCP);
-                while(1) {}
             }
         }
 
-        wifi.setNTP(ntpHost);
-        Display.status(STATUS_OK);
-
-        Serial << F("IP: ") << wifi.getIP(bufRequest, REQUEST_BUFFER_SIZE) << endl
-               << F("Netmask: ") << wifi.getNetMask(bufRequest, REQUEST_BUFFER_SIZE) << endl
-               << F("Gateway: ") << wifi.getGateway(bufRequest, REQUEST_BUFFER_SIZE) << endl
-               << F("DNS: ") << wifi.getDNS(bufRequest, REQUEST_BUFFER_SIZE) << endl;
-
-        wifi.SendCommand("set comm remote 0", ">", bufBody, BODY_BUFFER_SIZE);
-        wifi.closeConnection();
-
-        wifi.flush();
-        while (wifi.available())
+        if (fConnected)
         {
-            wifi.read();
+            wifi.setNTP(ntpHost);
+
+            Serial << F("IP: ") << wifi.getIP(bufRequest, REQUEST_BUFFER_SIZE) << endl
+                   << F("Netmask: ") << wifi.getNetMask(bufRequest, REQUEST_BUFFER_SIZE) << endl
+                   << F("Gateway: ") << wifi.getGateway(bufRequest, REQUEST_BUFFER_SIZE) << endl
+                   << F("DNS: ") << wifi.getDNS(bufRequest, REQUEST_BUFFER_SIZE) << endl;
+
+            wifi.closeConnection();
+            wifi.flush();
+            while (wifi.available())
+            {
+                wifi.read();
+            }
         }
     }
+
     Serial << F("RAM: ") << freeMemory() << endl;
     Serial << F("startWiFly(): exit") << endl;
+    return fConnected;
 }
 
 void sendRequest()

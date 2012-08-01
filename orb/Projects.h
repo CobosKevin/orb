@@ -4,7 +4,7 @@
 #include "ArduinoUno.h"
 #include "Project.h"
 
-#define MAX_NUMBER_PROJECTS 10
+#define MAX_NUMBER_PROJECTS 12
 
 class Projects
 {
