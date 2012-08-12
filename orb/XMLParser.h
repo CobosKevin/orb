@@ -1,7 +1,7 @@
 #ifndef	XMLPARSER_H
 #define XMLPARSER_H
 
-#define MAX_STRING_LEN  50
+#define MAX_STRING_LEN  40
 
 class XMLParser
 {

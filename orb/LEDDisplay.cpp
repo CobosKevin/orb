@@ -4,47 +4,38 @@
 
 LEDDisplay::LEDDisplay()
 {
-}
-
-void LEDDisplay::setRGBPins(unsigned short redPin, unsigned short greenPin, unsigned short bluePin)
-{
-    redLEDPulser = LEDPulser(redPin);
-    greenLEDPulser = LEDPulser(greenPin);
-    blueLEDPulser = LEDPulser(bluePin);
+    megaBrite = MegaBrite();
 }
 
 void LEDDisplay::refresh()
 {
-    redLEDPulser.pulse();
-    greenLEDPulser.pulse();
-    blueLEDPulser.pulse();
+    megaBrite.animate();
 }
 
 void LEDDisplay::test()
 {
-    redLEDPulser.on();
+    megaBrite.on(RED);
     ArduinoUno_Delay(400);
-    redLEDPulser.off();
-    greenLEDPulser.on();
+    megaBrite.off(RED);
+    megaBrite.on(GREEN);
     ArduinoUno_Delay(400);
-    greenLEDPulser.off();
-    blueLEDPulser.on();
+    megaBrite.off(GREEN);
+    megaBrite.on(BLUE);
     ArduinoUno_Delay(400);
-    blueLEDPulser.off();
+    megaBrite.off(BLUE);
 }
 
 void LEDDisplay::buildInProgress(bool lastBuildSuccess = true)
 {
     if (lastBuildSuccess)
     {
-        redLEDPulser.off();
-        greenLEDPulser.enable();
+        megaBrite.off(RED);
+        megaBrite.pulseOn(GREEN, SLOW);
     }
     else
     {
-        greenLEDPulser.off();
-        redLEDPulser.slow();
-        redLEDPulser.enable();
+        megaBrite.off(GREEN);
+        megaBrite.pulseOn(RED, SLOW);
     }
 }
 
@@ -52,21 +43,21 @@ void LEDDisplay::buildDone(bool success = true)
 {
     if (success)
     {
-        redLEDPulser.off();
-        greenLEDPulser.on();
+        megaBrite.off(RED);
+        megaBrite.on(GREEN);
     }
     else
     {
-        greenLEDPulser.off();
-        redLEDPulser.on();
+        megaBrite.off(GREEN);
+        megaBrite.on(RED);
     }
 
 }
 
 void LEDDisplay::sleep()
 {
-    redLEDPulser.off();
-    greenLEDPulser.off();
+    megaBrite.off(GREEN);
+    megaBrite.off(RED);
 }
 
 void LEDDisplay::status(int code)
@@ -74,29 +65,31 @@ void LEDDisplay::status(int code)
     switch(code)
     {
     case STATUS_OK:
-        blueLEDPulser.off();
+        megaBrite.off(BLUE);
         break;
     case STATUS_CONNECTION_ERROR:
-        blueLEDPulser.slow();
-        blueLEDPulser.enable();
+        megaBrite.pulseOn(BLUE, SLOW);
         break;
     case STATUS_NO_NETWORK:
-        blueLEDPulser.fast();
-        blueLEDPulser.enable();
+        megaBrite.pulseOn(BLUE, FAST);
         break;
     case STATUS_SETUP_MODE:
-        blueLEDPulser.on();
+        megaBrite.on(BLUE);
+        break;
+    case STATUS_NO_BUILDS:
+    case STATUS_ERROR_PARSING_BUILDS:
+        megaBrite.toggleOn(RED);
+        megaBrite.toggleOn(GREEN);
         break;
     default:
-        blueLEDPulser.off();
+        megaBrite.off(BLUE);
     }
 }
 
 void LEDDisplay::someBuildFailed()
 {
-    greenLEDPulser.off();
-    redLEDPulser.fast();
-    redLEDPulser.enable();
+    megaBrite.off(GREEN);
+    megaBrite.pulseOn(RED, FAST);
 }
 
 LEDDisplay Display;
