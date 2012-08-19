@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Orb by ternarylabs</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Orb</h1>
+        <h2>Ambiant Jenkins build status</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/ternarylabs/orb/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/ternarylabs/orb/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/ternarylabs/orb" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>The Orb</h1>
+
+<p>The Orb is an Arduino based ambiant device representing the state of Jenkins build jobs. It connects wirelessly to the Internet, parses the build file at /cc.xml and interpret the results.</p>
+
+<h2>Color Codes</h2>
+
+<h1></h1>
+
+<h3>GREEN</h3>
+
+<ul>
+<li>SOLID - Most recent build successfull</li>
+<li>PULSING SLOW - Most recent successfull build in progress</li>
+<li>ALTERNATING WITH RED - Schroedinger state. Error parsing build xml file.</li>
+</ul><h3>RED</h3>
+
+<ul>
+<li>SOLID - Most recent build failed</li>
+<li>PULSING SLOW - Most recent failed build in progress</li>
+<li>PULSING FAST - One or more build in failed state</li>
+<li>ALTERNATING WITH GREEN - Schroedinger state. Error parsing build xml file.</li>
+</ul><h3>BLUE</h3>
+
+<ul>
+<li>SOLID - In WiFi setup mode (see below)</li>
+<li>PULSING SLOW - Failed connecting to host</li>
+<li>PULSING FAST - No WiFi network</li>
+</ul><p>When there is no build activity and all build are in a success state, the Orb will turn off after 2 minutes.</p>
+
+<h2>Change WiFi Settings</h2>
+
+<h1></h1>
+
+<p>Open the Orb, toggle switch #1 to SETUP, cycle power.</p>
+
+<p>On a computer, join adhoc network Wifly-GSX-dd. Make sure you have a self assigned IP address in the 169.254.1.x subnet.</p>
+
+<p>Telnet to the Orb and enter command mode with <code>$$$</code>. You can then enter your WiFi settings.</p>
+
+<pre><code>&gt; telnet 169.254.1.1 2000
+$$$
+set wlan ssid YOUR-SSID
+set wlan phrase YOUR-PASSWORD
+set wlan auth 4 (0=none, 4=WPA2)
+set ip dhcp 1
+set wlan join 2
+save
+reboot
+</code></pre>
+
+<p>Toggle switch #1 to WIFI, cycle power.</p>
+
+<h2>Jenkins Configuration</h2>
+
+<h1></h1>
+
+<p>Make sure that READ permissions is granted for /cc.xml. This opens a hole in security to allow unauthenticated access to /cc.xml at the root of the server. This URI provides monitoring capability to a range of desktop clients. Enabling this option reveals limited information about your build to the whole world. Use with care.</p>
+
+<h2>Unit Tests</h2>
+
+<h1></h1>
+
+<pre><code>rake all
+</code></pre>
+      </section>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-7142026-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
