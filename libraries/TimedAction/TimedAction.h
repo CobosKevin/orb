@@ -31,7 +31,7 @@ class TimedAction
     void reset();
     void disable();
     void enable();
-    void check();
+    bool check();
 
     void setInterval(unsigned long interval);
 

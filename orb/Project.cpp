@@ -42,3 +42,8 @@ time_t Project::computeTimeUTC(const char* s)
     strptime(s, "%Y-%m-%dT%H:%M:%S%z", &lastBuildTime);
     return timegm(&lastBuildTime);
 }
+
+bool Project::valid()
+{
+    return((hash > 0) && (lastBuildTimeUTC > 0));
+}

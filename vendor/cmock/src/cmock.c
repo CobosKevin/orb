@@ -29,7 +29,8 @@
 
 //amount of memory to allow cmock to use in its internal heap
 #ifndef CMOCK_MEM_SIZE
-#define CMOCK_MEM_SIZE (32768)
+//#define CMOCK_MEM_SIZE (32768)
+#define CMOCK_MEM_SIZE (32768*8)
 #endif
 
 //automatically calculated defs for easier reading

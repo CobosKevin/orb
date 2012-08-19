@@ -191,7 +191,7 @@ void testParseBogusMarkup(void)
 void callbackBufferOverflow(void* context, bool fTagClosed, char* tag, char* attribute, char* value)
 {
 	TEST_ASSERT(fTagClosed);
-	TEST_ASSERT_EQUAL_STRING("0123456789012345678901234567890123456789012345678", tag);
+	TEST_ASSERT_EQUAL_STRING("012345678901234567890123456789012345678", tag);
 	TEST_ASSERT_EQUAL_STRING("", attribute);
 	TEST_ASSERT_EQUAL_STRING("", value);
 }

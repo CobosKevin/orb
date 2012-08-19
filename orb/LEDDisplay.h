@@ -1,18 +1,20 @@
 #ifndef LED_DISPLAY_H
 #define LED_DISPLAY_H
 
-#include "LEDPulser.h"
+#include "MegaBrite.h"
 
-#define STATUS_OK               0
-#define STATUS_CONNECTION_ERROR 1
-#define STATUS_NO_NETWORK       2
-#define STATUS_SETUP_MODE       3
+#define STATUS_OK                   0
+#define STATUS_CONNECTION_ERROR     1
+#define STATUS_NO_NETWORK           2
+#define STATUS_SETUP_MODE           3
+#define STATUS_NO_BUILDS            4
+#define STATUS_ERROR_PARSING_BUILDS 5
 
 class LEDDisplay
 {
 public:
     LEDDisplay();
-    void setRGBPins(unsigned short redPin, unsigned short greenPin, unsigned short bluePin);
+    void setup();
     void buildInProgress(bool lastBuildSuccess);
     void buildDone(bool success);
     void someBuildFailed();
@@ -20,10 +22,9 @@ public:
     void test();
     void sleep();
     void refresh();
+
 private:
-    LEDPulser redLEDPulser;
-    LEDPulser greenLEDPulser;
-    LEDPulser blueLEDPulser;
+	MegaBrite megaBrite;
 };
 
 extern LEDDisplay Display;

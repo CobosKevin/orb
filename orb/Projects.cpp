@@ -95,7 +95,7 @@ bool Projects::hasFailure()
 {
     for (int i=0; i < numberProjects; i++)
     {
-        if (!all[i].success)
+        if (all[i].valid() && !all[i].success)
         {
             return true;
         }

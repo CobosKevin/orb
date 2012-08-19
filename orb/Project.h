@@ -9,6 +9,7 @@ public:
     Project();
     void setHash(const char* name);
     void setLastBuildTimeUTC(const char* s);
+    bool valid();
 
     unsigned int hash;
     bool success;

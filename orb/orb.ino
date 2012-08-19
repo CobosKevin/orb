@@ -34,22 +34,20 @@
 #include "LEDDisplay.h"
 #include "Jenkins.h"
 
-
-#define RED_LED_PIN    9U
-#define GREEN_LED_PIN 10U
-#define BLUE_LED_PIN  11U
-
-#define SETUP_MODE_PIN 13U
+#define SETUP_MODE_PIN 12U
 
 #define REQUEST_BUFFER_SIZE 180
 
 #define JENKINS_CONNECT_TIMEOUT 5000UL
 #define JENKINS_CONNECT_ATEMPTS 4
+#define JENKINS_CHECK_IN_MS     30000UL
 
+#define DISPLAY_SLEEP_IN_MS     120000UL
+    
 Jenkins jenkins;
 WiFlySerial wifi(ARDUINO_RX_PIN, ARDUINO_TX_PIN);
 // Check the state of the build periodically
-TimedAction getBuildStateAction(30000, sendRequest);
+TimedAction getBuildStateAction(JENKINS_CHECK_IN_MS, sendRequest);
 // Update display periodically
 TimedAction refreshDisplayAction(5, refreshDisplay);
 
@@ -66,7 +64,8 @@ void setup()
     Serial << F("setup(): enter") << endl;
     Serial << F("RAM: ") << freeMemory() << endl;
 
-    Display.setRGBPins(RED_LED_PIN, GREEN_LED_PIN, BLUE_LED_PIN);
+    Display.setup();
+
     Display.test();
 
     if (!fSetupMode) 
@@ -98,13 +97,19 @@ void loop()
 
     if (!fSetupMode && !fSetupFailed) 
     {
-        if (wifi.isConnectionOpen() && wifi.available() > 0)
+        if (wifi.isConnectionOpen())
         {
-            while (wifi.available() > 0)
-            {
+            // Timeout if response does not come fast enough
+            unsigned long responseTimeOut = millis() + JENKINS_CONNECT_TIMEOUT;
+            while (responseTimeOut > millis() && wifi.isConnectionOpen()) {
+                if (wifi.available() > 0) {
+                    int data = wifi.read();
+                    if (data > 0)
+                    {
+                        jenkins.parse((char) data);
+                    }
+                }
                 refreshDisplayAction.check();
-                jenkins.parse((char) wifi.read());
-                delay(1);
             }
             wifi.closeConnection();
             displayBuildState();
@@ -241,52 +246,66 @@ void displayBuildState()
 {
     static long lastBuildTime = 0;
 
-    Project project;
-    int buildingIndex = jenkins.projects.building();
-
-    if (buildingIndex >= 0)
+    if (jenkins.projects.count() > 0)
     {
-        project = jenkins.projects.all[buildingIndex];
-    }
-    else
-    {
-        project = jenkins.projects.mostRecentBuild();
-    }
+        Project project;
+        int buildingIndex = jenkins.projects.building();
 
-    Serial << F("Projects: ") << jenkins.projects.count() << endl;
-
-    for (int i=0; i<jenkins.projects.count(); i++)
-    {
-        Serial << F("Hash: ") << jenkins.projects.all[i].hash << endl;
-        Serial << F("Last Build Time: ") << jenkins.projects.all[i].lastBuildTimeUTC << endl;
-        Serial << F("Status: ") << (jenkins.projects.all[i].success ? F("Success") : F("Failure")) << endl;
-        Serial << F("Activity: ") << (jenkins.projects.all[i].building ? F("Building") : F("Sleeping")) << endl;
-
-    }
-    Serial << F("Project: ") << project.hash << endl;
-
-    if (project.building)
-    {
-        lastBuildTime = millis();
-        Display.buildInProgress(project.success);
-    }
-    else
-    {
-        // After 2 min turn off lights or notify of failure state
-        if (millis() - lastBuildTime > 120000)
+        if (buildingIndex >= 0)
         {
-            if (jenkins.projects.hasFailure())
-            {
-                Display.someBuildFailed();
-            }
-            else
-            {
-                Display.sleep();
-            }
+            project = jenkins.projects.all[buildingIndex];
         }
         else
         {
-            Display.buildDone(project.success);
+            project = jenkins.projects.mostRecentBuild();
         }
+
+        Serial << F("Projects: ") << jenkins.projects.count() << endl;
+
+        for (int i=0; i<jenkins.projects.count(); i++)
+        {
+            Serial << F("Hash: ") << jenkins.projects.all[i].hash << endl;
+            Serial << F("Last Build Time: ") << jenkins.projects.all[i].lastBuildTimeUTC << endl;
+            Serial << F("Status: ") << (jenkins.projects.all[i].success ? F("Success") : F("Failure")) << endl;
+            Serial << F("Activity: ") << (jenkins.projects.all[i].building ? F("Building") : F("Sleeping")) << endl;
+
+        }
+        Serial << F("Project: ") << project.hash << endl;
+
+        if (!project.valid())
+        {
+            Display.status(STATUS_ERROR_PARSING_BUILDS);
+        }   
+        else
+        {
+            if (project.building)
+            {
+                lastBuildTime = millis();
+                Display.buildInProgress(project.success);
+            }
+            else
+            {
+                // After 2 min turn off lights or notify of failure state
+                if (millis() - lastBuildTime > DISPLAY_SLEEP_IN_MS)
+                {
+                    if (jenkins.projects.hasFailure())
+                    {
+                        Display.someBuildFailed();
+                    }
+                    else
+                    {
+                        Display.sleep();
+                    }
+                }
+                else
+                {
+                    Display.buildDone(project.success);
+                }
+            }
+        }
+    }
+    else
+    {
+        Display.status(STATUS_NO_BUILDS);
     }
 }

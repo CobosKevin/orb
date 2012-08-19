@@ -4,7 +4,7 @@
 #include "ArduinoUno.h"
 #include "Project.h"
 
-#define MAX_NUMBER_PROJECTS 12
+#define MAX_NUMBER_PROJECTS 20
 
 class Projects
 {
@@ -19,7 +19,7 @@ public:
     int find(Project project);
     int building();
     bool hasFailure();
-
+    
 private:
     byte numberProjects;
 };

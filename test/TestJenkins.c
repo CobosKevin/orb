@@ -42,7 +42,7 @@ void testParseTenProjects(void)
 	{
 		jenkins.parse(input[i]);
 	}
-	TEST_ASSERT_EQUAL_INT(MAX_NUMBER_PROJECTS, jenkins.projects.count());
+	TEST_ASSERT_EQUAL_INT(10, jenkins.projects.count());
 }
 
 void testParseSuccess(void)

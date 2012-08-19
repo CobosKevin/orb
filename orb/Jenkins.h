@@ -10,6 +10,7 @@ class Jenkins
 public:
     Jenkins();
 
+    void initialize();
     void parse(char c);
 
     static void parserCallback(void* context, bool fTagClosed, char* tag, char* attribute, char* value);
@@ -21,7 +22,6 @@ public:
     const char* getPath();
 
 private:
-    void initialize();
     void handleAttributes(Project &project, char* attribute, char* value);
     XMLParser xmlParser;
     Project currentProject;

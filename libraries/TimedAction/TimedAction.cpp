@@ -84,13 +84,19 @@ void TimedAction::enable()
 || @description
 || | Check if it is time for this TimedAction to call the function
 || #
+|| @return true if action was performed
 */
-void TimedAction::check()
+bool TimedAction::check()
 {
   if (active && (millis() - previous >= interval))
   {
     previous = millis();
     execute();
+    return true;
+  }
+  else
+  {
+    return false;
   }
 }
 
